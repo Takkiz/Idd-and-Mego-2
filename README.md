@@ -1,2 +1,2 @@
-# Idd and Mego 2
+# Iddy and Mego 2
  
