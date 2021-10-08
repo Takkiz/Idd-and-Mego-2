@@ -1,50 +1,57 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
+
+[RequireComponent(typeof(PlayerInput))]
 public class PlayerMovement : MonoBehaviour{
 
+    private PlayerInput controller;
     private Rigidbody2D rb;
     private BoxCollider2D cl;
-    private float speed = 1f;
-    private static float max = 14f;
-
+    [Header("Speed Stuff")]
+    [SerializeField] private float speed = 4f;
+    [SerializeField] private float max = 14f;
+    [Header("LayerTypes")]
+    [Header("LayerTypes")]
     [SerializeField] private LayerMask ground;
+
+    public float Speed { get => speed; set => speed = value; }
+
+    private Vector2 movementInput = Vector2.zero;
+    private bool jumped = false;
 
     // Start is called before the first frame update
     private void Start(){
 
         rb = GetComponent<Rigidbody2D>();
         cl = GetComponent<BoxCollider2D>();
+        controller = gameObject.GetComponent<PlayerInput>();
     }
+
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        movementInput = context.ReadValue<Vector2>();
+    }
+    public void onJump(InputAction.CallbackContext context)
+    {
+        jumped = context.action.triggered; //triggered on frame
+
+    }
+
 
     // Update is called once per frame
     private void Update(){
 
-        float dirX = Input.GetAxisRaw("Horizontal");
-        float dirY = Input.GetAxisRaw("Jump");
- 
-        if(Input.GetButton("Horizontal")){
+        float dirX = movementInput.x;
+        float dirY = movementInput.y;
+        rb.velocity = new Vector2(dirX * speed, rb.velocity.y);
 
-            Debug.Log(speed);
-            Debug.Log(dirY);
-            rb.velocity = new Vector2(dirX * speed, rb.velocity.y);
 
-            if (speed < max){
-                speed += .01f;
-            }
-       }
+        if (jumped && onGround()){
 
-       if (Input.GetButtonUp("Horizontal")){
-
-            if (speed > 1f){
-                speed = 1f;
-            }
-        }
-       
-        if (Input.GetButtonDown("Jump") && onGround()){
-
-            rb.velocity = new Vector2(rb.velocity.x, (dirY * (speed / 2)) + 12f);
+            rb.velocity = new Vector2(rb.velocity.x, (dirY * (Speed / 2)) + 12f);
         }
     }
     private bool onGround(){
